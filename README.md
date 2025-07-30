@@ -25,49 +25,61 @@ Monitoring that there is at least one transaction from a controlled address in a
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface ITrap {
-    function collect() external returns (bytes memory);
-    function shouldRespond(bytes[] calldata data) external view returns (bool, bytes memory);
-}
+contract InactivityTrap {
+    address public constant target = 0x53eD4A8B4D93e9Ab7ee211a34F9C439024c5Ec8c;
+    uint256 public constant inactivityThreshold = 3600; // 1 hour
 
-contract InactivityTrap is ITrap {
-    address public constant target = 0x53eD4A8B4D93e9Ab7ee211a34F9C439024c5Ec8c; // <-- правильный checksum
-    uint256 public constant inactivityThreshold = 3600; // 1 час
-
-    function collect() external view override returns (bytes memory) {
-        return abi.encode(block.timestamp);
+    struct CollectOutput {
+        uint256 timestamp;
+        uint256 targetNonce;
     }
 
-    function shouldRespond(bytes[] calldata data) external pure override returns (bool, bytes memory) {
-        if (data.length < 2) return (false, "Insufficient data");
+    constructor() {}
 
-        uint256 currentTimestamp = abi.decode(data[0], (uint256));
-        uint256 lastTimestamp = abi.decode(data[1], (uint256));
+    // Collect current timestamp and target's nonce (proxy for activity)
+    function collect() external view returns (bytes memory) {
+        uint256 nonce = target.code.length == 0
+            ? targetNonceEOA()
+            : block.number; // placeholder for contract activity (could check events)
+        return abi.encode(CollectOutput(block.timestamp, nonce));
+    }
 
-        if (currentTimestamp - lastTimestamp >= inactivityThreshold) {
-            return (true, "");
+    // Compare with previous sample
+    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
+        if (data.length < 2) return (false, bytes(""));
+
+        CollectOutput memory current = abi.decode(data[0], (CollectOutput));
+        CollectOutput memory previous = abi.decode(data[1], (CollectOutput));
+
+        // No change in nonce for too long
+        if (current.timestamp - previous.timestamp >= inactivityThreshold
+            && current.targetNonce == previous.targetNonce) {
+            return (true, bytes(""));
         }
 
-        return (false, "");
+        return (false, bytes(""));
+    }
+
+    function targetNonceEOA() internal view returns (uint256) {
+        return target.balance; // placeholder, consider getting real tx nonce via RPC or logs
     }
 }
+
+
+
 # Response Contract: LogAlertReceiver.sol
 ```
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract InactivityAlertReceiver {
-    event InactivityDetected(address monitoredAddress, uint256 timestamp, string message);
+contract LogAlertReceiver {
+    event InactivityDetected(address monitoredAddress, uint256 timestamp);
 
     function logInactivity(address monitoredAddress) external {
-        emit InactivityDetected(
-            monitoredAddress,
-            block.timestamp,
-            "Inactivity threshold exceeded - possible disruption or halted automation."
-        );
+        emit InactivityDetected(monitoredAddress, block.timestamp);
     }
-}```
----
+}
+
 
 # What It Solves 
 
