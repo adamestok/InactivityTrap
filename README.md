@@ -1,4 +1,4 @@
-# BalanceAnomalyTrap
+# InactivityTrap
 **Inactivity Trap— Drosera Trap SERGEANT** 
 
 # Objective
