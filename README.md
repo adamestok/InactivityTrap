@@ -31,10 +31,9 @@ If the change is equal to or exceeds the threshold, the trap is activated.
     interface ITrap {
     function collect() external view returns (bytes memory);
     function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory);
-}
 
-contract FineBalanceShiftTrap is ITrap {
-    address public constant monitoredWallet = 0x53eD4A8B4D93e9Ab7ee211a34F9C439024c5Ec8c;
+    contract FineBalanceShiftTrap is ITrap {
+    address public constant monitoredWallet = 0x123456789abcdefghijklmnopq1234567890;
     uint256 public constant sensitivity = 5;
 
     function collect() external view override returns (bytes memory) {
