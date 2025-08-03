@@ -1,4 +1,4 @@
-FineBalanceShiftTrap is a custom trap for a Drosera node designed to monitor balance anomalies at a given address.
+# FineBalanceShiftTrap - is a custom trap for a Drosera node designed to monitor balance anomalies at a given address.
 
 
 **FineBalanceShiftTrap — Drosera Trap SERGEANT and CAPTAIN** 
@@ -24,7 +24,7 @@ The percentage of change in ppm is calculated.
 If the change is equal to or exceeds the threshold, the trap is activated.
 
 
-solidity
+# contract FineBalanceShiftTrap
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -73,10 +73,10 @@ contract BalanceShiftReceiver {
         emit BalanceShiftDetected(details);
     }
 }
+}}
 
 
-
-# What It Solves 
+## What It Solves 
 
 The FineBalanceShiftTrap event logs:
 
