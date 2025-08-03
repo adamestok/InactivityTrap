@@ -26,9 +26,9 @@ If the change is equal to or exceeds the threshold, the trap is activated.
 
 # contract FineBalanceShiftTrap
     } // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+     pragma solidity ^0.8.20;
 
-interface ITrap {
+    interface ITrap {
     function collect() external view returns (bytes memory);
     function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory);
 }
