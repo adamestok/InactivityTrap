@@ -24,7 +24,7 @@ The percentage of change in ppm is calculated.
 If the change is equal to or exceeds the threshold, the trap is activated.
 
 
-
+solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
