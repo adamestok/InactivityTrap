@@ -98,12 +98,12 @@ forge create src/FineBalanceShiftTrap.sol:FineBalanceShiftTrap \
 [traps.mytrap]
 path = "out/FineBalanceShiftTrap.sol/FineBalanceShiftTrap.json"
 response_contract = "<BalanceShiftReceiver address>"
-response_function = "logAnomaly(string)"
+response_function = "BalanceShiftReceiver(string)"
 ```
 3. ## _Apply changes_ 
 ```
 DROSERA_PRIVATE_KEY=0x... drosera apply
-```
+
 # Testing the Trap 
 
 1. Send ETH to/from target address on Ethereum Hoodi testnet.
@@ -113,7 +113,6 @@ DROSERA_PRIVATE_KEY=0x... drosera apply
 3. Observe logs from Drosera operator:
 
 4. get ShouldRespond='true' in logs and Drosera dashboard
----
 
 # Extensions & Improvements 
 
