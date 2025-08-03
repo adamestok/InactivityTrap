@@ -60,6 +60,7 @@ If the change is equal to or exceeds the threshold, the trap is activated.
 
 
 # Response Contract: BalanceShiftReceiver.sol
+"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
