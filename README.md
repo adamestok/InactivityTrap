@@ -71,10 +71,8 @@ contract BalanceShiftReceiver {
         emit BalanceShiftDetected(details);
     }
 }
-
-
+"
 # What It Solves 
-
 The FineBalanceShiftTrap event logs:
 
 -Who was monitored (monitoredAddress),
