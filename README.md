@@ -70,11 +70,9 @@ contract BalanceShiftReceiver {
     function notifyShift(string calldata details) external {
         emit BalanceShiftDetected(details);
     }
-}
-}}
 
 
-## What It Solves 
+#What It Solves 
 
 The FineBalanceShiftTrap event logs:
 
