@@ -1,4 +1,3 @@
-FineBalanceShiftTrap
 FineBalanceShiftTrap is a custom trap for a Drosera node designed to monitor balance anomalies at a given address.
 **FineBalanceShiftTrap — Drosera Trap SERGEANT and CAPTAIN** 
 
