@@ -60,7 +60,7 @@ If the change is equal to or exceeds the threshold, the trap is activated.
 
 
 # Response Contract: BalanceShiftReceiver.sol
-"
+```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -71,7 +71,7 @@ contract BalanceShiftReceiver {
         emit BalanceShiftDetected(details);
     }
 }
-"
+```
 # What It Solves 
 The FineBalanceShiftTrap event logs:
 
