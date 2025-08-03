@@ -1,89 +1,81 @@
-# InactivityTrap
-**Inactivity Trap— Drosera Trap SERGEANT** 
+FineBalanceShiftTrap
+FineBalanceShiftTrap is a custom trap for a Drosera node designed to monitor balance anomalies at a given address.
+**FineBalanceShiftTrap — Drosera Trap SERGEANT and CAPTAIN** 
 
 # Objective
 
--Monitoring a validator contract that should always be active.
-
--Checking timeouts in a DeFi strategy.
-
--Can be used as a watchdog "trap for a watchdog".
+The trap monitors minor changes in the balance of the specified wallet and is triggered if the difference between the current and previous values exceeds the specified sensitivity threshold (default is 0.5%).
 # Problem
 
--collect() returns block.timestamp (i.e. the current time of the call).
+monitoredWallet — the target address being monitored.
 
--shouldRespond() compares two timestamps (current and previous).
+sensitivity — the sensitivity threshold in ppm (‰). A value of 5 means 0.5%.
 
--If more than 1 hour has passed without activity, shouldRespond() returns true.
----
+The collect() function returns the current balance of the monitored address.
 
+The shouldRespond() function analyzes the last two balances and determines whether there is a deviation greater than the specified threshold.
 # Trap Logic Summary
 
-_Trap Contract: InactivityTrap.sol_
+The last two balance values are compared.
 
-Monitoring that there is at least one transaction from a controlled address in a given period of time (e.g. 1 hour). If activity disappears, something suspicious may have happened (e.g. an attacker stopped an automated script).
+The percentage of change in ppm is calculated.
+
+If the change is equal to or exceeds the threshold, the trap is activated.
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract InactivityTrap {
-    address public constant target = 0x53eD4A8B4D93e9Ab7ee211a34F9C439024c5Ec8c;
-    uint256 public constant inactivityThreshold = 3600; // 1 hour
+interface ITrap {
+    function collect() external view returns (bytes memory);
+    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory);
+}
 
-    struct CollectOutput {
-        uint256 timestamp;
-        uint256 targetNonce;
+contract FineBalanceShiftTrap is ITrap {
+    address public constant monitoredWallet = 0x53eD4A8B4D93e9Ab7ee211a34F9C439024c5Ec8c;
+    uint256 public constant sensitivity = 5;
+
+    function collect() external view override returns (bytes memory) {
+        return abi.encode(monitoredWallet.balance);
     }
 
-    constructor() {}
+    function shouldRespond(bytes[] calldata data) external pure override returns (bool, bytes memory) {
+        if (data.length < 2) return (false, "Insufficient data");
 
-    // Collect current timestamp and target's nonce (proxy for activity)
-    function collect() external view returns (bytes memory) {
-        uint256 nonce = target.code.length == 0
-            ? targetNonceEOA()
-            : block.number; // placeholder for contract activity (could check events)
-        return abi.encode(CollectOutput(block.timestamp, nonce));
-    }
+        uint256 latest = abi.decode(data[0], (uint256));
+        uint256 previous = abi.decode(data[1], (uint256));
 
-    // Compare with previous sample
-    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
-        if (data.length < 2) return (false, bytes(""));
+        if (previous == 0) return (false, "Previous balance is zero");
 
-        CollectOutput memory current = abi.decode(data[0], (CollectOutput));
-        CollectOutput memory previous = abi.decode(data[1], (CollectOutput));
+        uint256 diff = latest > previous ? latest - previous : previous - latest;
+        uint256 permilleChange = (diff * 1000) / previous;
 
-        // No change in nonce for too long
-        if (current.timestamp - previous.timestamp >= inactivityThreshold
-            && current.targetNonce == previous.targetNonce) {
-            return (true, bytes(""));
+        if (permilleChange >= sensitivity) {
+            return (true, "");
         }
 
-        return (false, bytes(""));
-    }
-
-    function targetNonceEOA() internal view returns (uint256) {
-        return target.balance; // placeholder, consider getting real tx nonce via RPC or logs
+        return (false, "");
     }
 }
 
 
-
-# Response Contract: LogAlertReceiver.sol
+# Response Contract: BalanceShiftReceiver.sol
 ```
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-contract LogAlertReceiver {
-    event InactivityDetected(address monitoredAddress, uint256 timestamp);
+contract BalanceShiftReceiver {
+    event BalanceShiftDetected(string details);
 
-    function logInactivity(address monitoredAddress) external {
-        emit InactivityDetected(monitoredAddress, block.timestamp);
+    function notifyShift(string calldata details) external {
+        emit BalanceShiftDetected(details);
     }
 }
 
 
+
 # What It Solves 
 
-The InactivityDetected event logs:
+The FineBalanceShiftTrap event logs:
 
 -Who was monitored (monitoredAddress),
 
@@ -98,20 +90,16 @@ The logInactivity() function will be called by Drosera nodes when the trap is tr
 
 1. ## _Deploy Contracts (e.g., via Foundry)_ 
 ```
-forge create src/InactivityTrap.sol: InactivityTrap \
+forge create src/FineBalanceShiftTrap.sol:FineBalanceShiftTrap \
   --rpc-url https://ethereum-hoodi-rpc.publicnode.com \
   --private-key 0x...
 ```
-```
-forge create src/LogAlertReceiver.sol:LogAlertReceiver \
-  --rpc-url https://ethereum-hoodi-rpc.publicnode.com \
-  --private-key 0x...
 ```
 2. ## _Update drosera.toml_ 
 ```
 [traps.mytrap]
-path = "out/InactivityTrap.sol/InactivityTrap.json"
-response_contract = "<LogAlertReceiver address>"
+path = "out/FineBalanceShiftTrap.sol/FineBalanceShiftTrap.json"
+response_contract = "<BalanceShiftReceiver address>"
 response_function = "logAnomaly(string)"
 ```
 3. ## _Apply changes_ 
