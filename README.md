@@ -68,11 +68,10 @@ contract BalanceShiftReceiver {
     event BalanceShiftDetected(string details);
 
     function notifyShift(string calldata details) external {
-        emit BalanceShiftDetected(details);
+        emit BalanceShiftDetected(details);}
+
 }
-
-
-#What It Solves 
+    # What It Solves 
 
 The FineBalanceShiftTrap event logs:
 
@@ -82,7 +81,7 @@ The FineBalanceShiftTrap event logs:
 
 -Alarm message.
 
-The logInactivity() function will be called by Drosera nodes when the trap is triggered.
+The BalanceShiftReceiver() function will be called by Drosera nodes when the trap is triggered.
 ---
 
 # Deployment & Setup Instructions 
