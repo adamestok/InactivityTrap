@@ -69,7 +69,7 @@ contract BalanceShiftReceiver {
 
     function notifyShift(string calldata details) external {
         emit BalanceShiftDetected(details);
-    }
+}
 
 
 #What It Solves 
